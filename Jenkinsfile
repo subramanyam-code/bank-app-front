@@ -39,13 +39,18 @@ pipeline {
 }
         stage('Deploy to ECS') {
     steps {
-        bat '''
-        aws ecs update-service ^
-        --cluster bank-cluster ^
-        --service bank-service ^
-        --force-new-deployment ^
-        --region ap-south-2
-        '''
+        withCredentials([[
+            $class: 'AmazonWebServicesCredentialsBinding',
+            credentialsId: 'aws-creds'
+        ]]) {
+            bat '''
+            aws ecs update-service ^
+            --cluster bank-cluster ^
+            --service bank-service ^
+            --force-new-deployment ^
+            --region ap-south-2
+            '''
+        }
     }
 }
     }
