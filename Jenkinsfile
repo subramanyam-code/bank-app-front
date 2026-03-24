@@ -22,14 +22,12 @@ pipeline {
                 bat 'docker build -t bank-app .'
             }
         }
-        stage('Push to ECR') {
+       stage('Push to ECR') {
     steps {
         bat '''
-        aws ecr get-login-password --region ap-south-2 | ^
-        docker login --username AWS --password-stdin 455982474789.dkr.ecr.ap-south-2.amazonaws.com
-        
+        aws ecr get-login-password --region ap-south-2 > password.txt
+        type password.txt | docker login --username AWS --password-stdin 455982474789.dkr.ecr.ap-south-2.amazonaws.com
         docker tag bank-app:latest 455982474789.dkr.ecr.ap-south-2.amazonaws.com/bank-app:latest
-        
         docker push 455982474789.dkr.ecr.ap-south-2.amazonaws.com/bank-app:latest
         '''
     }
