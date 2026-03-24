@@ -11,7 +11,7 @@ pipeline {
 
         stage('Clone Code') {
             steps {
-                git 'https://github.com/your-username/bank-app-front.git'
+                git 'https://github.com/subramanyam-code/bank-app-front.git'
             }
         }
 
