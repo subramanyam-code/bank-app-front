@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bank-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bank-app-front
+  template:
+    metadata:
+      labels:
+        app: bank-app-front
+    spec:
+      containers:
+      - name: bank-app-front
+        image: bank-app-front:latest   # your local image
+        imagePullPolicy: Never   # VERY IMPORTANT for local image
+        ports:
+        - containerPort: 3000
