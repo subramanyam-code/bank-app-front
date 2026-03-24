@@ -9,12 +9,6 @@ pipeline {
 
     stages {
 
-        stage('Clone Code') {
-            steps {
-                git 'https://github.com/subramanyam-code/bank-app-front.git'
-            }
-        }
-
         stage('Build') {
             steps {
                 echo "Building app..."
