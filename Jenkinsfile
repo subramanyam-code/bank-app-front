@@ -45,8 +45,8 @@ pipeline {
                 ]]) {
                     bat '''
                     aws ecs update-service ^
-                    --cluster bank-cluster ^
-                    --service bank-service ^
+                    --cluster cluster-1 ^
+                    --service my-task-service-dg3mo3g7 ^
                     --force-new-deployment ^
                     --region ap-south-2
                     '''
