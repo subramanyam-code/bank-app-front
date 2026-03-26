@@ -3,39 +3,39 @@ version: 0.2
 env:
   variables:
     AWS_DEFAULT_REGION: ap-south-2
-    ACCOUNT_ID: 455982474789
+    ACCOUNT_ID: "455982474789"
     IMAGE_REPO_NAME: bank-app
     IMAGE_TAG: latest
 
 phases:
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
+      - echo "Logging in to Amazon ECR..."
       - IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
 
   build:
     commands:
-      - echo Pulling Docker image...
+      - echo "Pulling Docker image..."
       - docker pull $IMAGE_URI
 
-      - echo Running container...
+      - echo "Running container..."
       - docker run -d --name test-container $IMAGE_URI
 
-      - echo Waiting for app to start...
+      - echo "Waiting for app to start..."
       - sleep 20
 
-      - echo Getting container ID...
+      - echo "Getting container ID..."
       - CONTAINER_ID=$(docker ps -q -f name=test-container)
 
-      - echo Getting container IP...
+      - echo "Getting container IP..."
       - CONTAINER_IP=$(docker inspect $CONTAINER_ID | grep '"IPAddress"' | head -1 | awk -F '"' '{print $4}')
 
-      - echo Container IP is $CONTAINER_IP
+      - echo "Container IP is $CONTAINER_IP"
 
-      - echo Testing app...
+      - echo "Testing app..."
       - curl -f http://$CONTAINER_IP || exit 1
 
-      - echo Cleaning up...
+      - echo "Cleaning up..."
       - docker stop test-container
       - docker rm test-container
