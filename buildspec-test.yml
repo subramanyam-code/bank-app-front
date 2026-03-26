@@ -1,7 +1,33 @@
 version: 0.2
 
+env:
+  variables:
+    AWS_DEFAULT_REGION: ap-south-2
+    ACCOUNT_ID: 455982474789
+    IMAGE_REPO_NAME: bank-app
+    IMAGE_TAG: latest
+
 phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+
   build:
     commands:
-      - echo "Running test stage..."
-      - echo "All tests passed ✅"
+      - echo Pulling Docker image...
+      - docker pull $IMAGE_URI
+
+      - echo Running container...
+      - docker run -d -p 8080:80 --name test-container $IMAGE_URI
+
+      - echo Waiting for app to start...
+      - sleep 10
+
+      - echo Testing app response...
+      - curl -f http://localhost:8080 || exit 1
+
+      - echo Stopping container...
+      - docker stop test-container
+      - docker rm test-container
