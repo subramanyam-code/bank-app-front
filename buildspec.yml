@@ -1,28 +1,24 @@
 version: 0.2
 
 phases:
-  install:
-    runtime-versions:
-      nodejs: 18
-    commands:
-      - echo Installing dependencies...
-      - npm install
-
   pre_build:
     commands:
-      - echo Pre-build phase...
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region ap-south-2 | docker login --username AWS --password-stdin <455982474789>.dkr.ecr.ap-south-2.amazonaws.com
 
   build:
     commands:
-      - echo Building the application...
-      - npm run build
+      - echo Build started
+      - docker build -t bank-app .
+      - docker tag bank-app:latest <455982474789>.dkr.ecr.ap-south-2.amazonaws.com/bank-app:latest
 
   post_build:
     commands:
-      - echo Build completed
+      - echo Pushing image...
+      - docker push <455982474789>.dkr.ecr.ap-south-2.amazonaws.com/bank-app:latest
+      - echo Writing image definitions file...
+      - printf '[{"name":"bank-app","imageUri":"%s"}]' <455982474789>.dkr.ecr.ap-south-2.amazonaws.com/bank-app:latest > imagedefinitions.json
 
 artifacts:
   files:
-    - '**/*'
-  base-directory: dist
-  discard-paths: no
+    - imagedefinitions.json
