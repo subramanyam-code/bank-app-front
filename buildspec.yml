@@ -4,20 +4,20 @@ phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region ap-south-2 | docker login --username AWS --password-stdin <455982474789>.dkr.ecr.ap-south-2.amazonaws.com
+      - aws ecr get-login-password --region ap-south-2 | docker login --username AWS --password-stdin 455982474789.dkr.ecr.ap-south-2.amazonaws.com
 
   build:
     commands:
       - echo Build started
       - docker build -t bank-app .
-      - docker tag bank-app:latest <455982474789>.dkr.ecr.ap-south-2.amazonaws.com/bank-app:latest
+      - docker tag bank-app:latest 455982474789.dkr.ecr.ap-south-2.amazonaws.com/bank-app:latest
 
   post_build:
     commands:
       - echo Pushing image...
-      - docker push <455982474789>.dkr.ecr.ap-south-2.amazonaws.com/bank-app:latest
+      - docker push 455982474789.dkr.ecr.ap-south-2.amazonaws.com/bank-app:latest
       - echo Writing image definitions file...
-      - printf '[{"name":"bank-app","imageUri":"%s"}]' <455982474789>.dkr.ecr.ap-south-2.amazonaws.com/bank-app:latest > imagedefinitions.json
+      - printf '[{"name":"bank-app","imageUri":"%s"}]' 455982474789.dkr.ecr.ap-south-2.amazonaws.com/bank-app:latest > imagedefinitions.json
 
 artifacts:
   files:
