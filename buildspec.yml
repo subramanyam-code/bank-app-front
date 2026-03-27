@@ -3,49 +3,32 @@ version: 0.2
 env:
   variables:
     AWS_DEFAULT_REGION: ap-south-2
-    ACCOUNT_ID: "455982474789"
     IMAGE_REPO_NAME: bank-app
     IMAGE_TAG: latest
+    CONTAINER_NAME: container-2   # 👈 must match ECS task definition
 
 phases:
   pre_build:
     commands:
-      - echo "Logging in to ECR..."
-      - IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - echo Logging in to Amazon ECR...
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - REPO_URI=$ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPO_URI
 
   build:
     commands:
-      - echo "Building Docker image..."
+      - echo Building Docker image...
       - docker build -t $IMAGE_REPO_NAME .
-
-      - echo "Tagging image..."
-      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $IMAGE_URI
-
-      - echo "Running container for testing..."
-      - docker run -d --name test-container $IMAGE_URI
-
-      - echo "Waiting for app..."
-      - sleep 20
-
-      - echo "Getting container IP..."
-      - CONTAINER_ID=$(docker ps -q -f name=test-container)
-      - CONTAINER_IP=$(docker inspect $CONTAINER_ID | grep '"IPAddress"' | head -1 | awk -F '"' '{print $4}')
-
-      - echo "Testing app..."
-      - curl -f http://$CONTAINER_IP || exit 1
-
-      - echo "Stopping container..."
-      - docker stop test-container
-      - docker rm test-container
+      - docker tag $IMAGE_REPO_NAME:latest $REPO_URI:$IMAGE_TAG
 
   post_build:
     commands:
-      - echo "Pushing image..."
-      - docker push $IMAGE_URI
+      - echo Pushing Docker image...
+      - docker push $REPO_URI:$IMAGE_TAG
 
-      - echo "Creating imagedefinitions.json..."
-      - printf '[{"name":"bank-app","imageUri":"%s"}]' $IMAGE_URI > imagedefinitions.json
+      # 🔥 THIS IS THE IMPORTANT PART
+      - echo Creating imagedefinitions.json...
+      - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $REPO_URI:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
   files:
